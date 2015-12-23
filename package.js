@@ -1,13 +1,13 @@
 Package.describe({
-    name: 'webpack:webpack',
+    name: 'singgum3b:webpack',
     version: '0.4.3',
-    summary: 'Seamlessly integrate Webpack with Meteor build system',
-    git: 'https://github.com/thereactivestack/meteor-webpack.git',
+    summary: 'Fork of webpack:webpack',
+    git: 'https://github.com/singggum3b/meteor-webpack.git',
     documentation: 'README.md'
 });
 
 Package.registerBuildPlugin({
-    name: 'webpack:webpack',
+    name: 'singgum3b:webpack',
     use: [
       'meteor',
       'ecmascript@0.1.5',
