@@ -1,3 +1,14 @@
+
+#Majors changes in this fork
+ - Remove dependant on react-router-ssr
+ - Automatically load common chunks (common-* prefix)
+ - Main entry need to be named [main: (entry)]
+ - Remove npm 2 , now dependency need to be install manually (with npm install), instead of running on each build
+ - You only need to use webpack.packages.json once to generate symlink, them you can use npm install and packages.json normally
+ - Server-side get injected with 2 variable for webpack stats : `WebpackStats` && `__WebpackDevServerConfig__`
+
+ =====================================
+
 Seamlessly integrate Webpack with the Meteor build system.
 
 Build your application with his assets. Use hot module replacement (HMR) in development mode. Optimize the code in production mode.

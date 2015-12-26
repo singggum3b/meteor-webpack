@@ -1,7 +1,9 @@
 WebpackSourceMapFix = function(sourceMap) {
   // Fix source map until Meteor upgrade source-map to 0.1.41
   // https://github.com/meteor/meteor/pull/5411
-  sourceMap.sources = sourceMap.sources.map(normalize);
+	return Object.assign({},sourceMap,{
+		sources : sourceMap.sources.map(normalize)
+	})
 };
 
 // https://github.com/mozilla/source-map/blob/c9b866964114c5445f4bfb135ec8120d5c7ffa58/lib/source-map/util.js

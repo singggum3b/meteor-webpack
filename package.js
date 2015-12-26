@@ -14,11 +14,13 @@ Package.registerBuildPlugin({
       'webpack:npmworkaround@0.1.0'
     ],
     sources: [
+			'plugin/WebpackStatUtil.js',
       'plugin/WebpackSourceMapFix.js',
       'plugin/WebpackCompiler.js',
       'plugin/webpack-plugin.js'
     ],
     npmDependencies: {
+			'immutable': "3.7.6",
       'underscore': '1.8.3',
       'connect': '3.4.0',
       'cors': '2.7.1',
@@ -29,7 +31,8 @@ Package.registerBuildPlugin({
       'memory-fs': '0.3.0',
       'mime': '1.3.4',
       'shelljs': '0.5.3',
-      'mkdirp': '0.5.1'
+      'mkdirp': '0.5.1',
+			'on-build-webpack': '0.1.0'
     }
 });
 
@@ -37,7 +40,7 @@ Package.onUse(function(api) {
     api.versionsFrom('1.2');
 
     api.use('isobuild:compiler-plugin@1.0.0');
-    api.use('webpack:reload@0.2.0');
+    //api.use('webpack:reload@0.2.0');
 
     // Meteor polyfill for ecmascript
     api.imply('ecmascript-runtime@0.2.6')
