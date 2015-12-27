@@ -6,6 +6,7 @@
  - Remove npm 2 , now dependency need to be install manually (with npm install), instead of running on each build
  - You only need to use webpack.packages.json once to generate symlink, them you can use npm install and packages.json normally
  - Server-side get injected with 2 variable for webpack stats : `WebpackStats` && `__WebpackDevServerConfig__`
+ - `webpack-hot-middleware` packages is required for hot code reloading dev (need to install)
 
  =====================================
 

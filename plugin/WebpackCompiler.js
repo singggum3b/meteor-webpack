@@ -74,6 +74,17 @@ WebpackCompiler = class WebpackCompiler {
 			//runNpmInstall(shortName, filterFiles(files, 'webpack.packages.json'));
 		}
 
+		if (IS_DEBUG && shortName != "server") {
+			files[0].addJavaScript({
+				path: "meteor-webpack-initcode.js",
+				data:"(" + String(function () {
+					Meteor._reload.onMigrate(function() {
+						return [false];
+					});
+				}) + ")();"
+			});
+		}
+
 		console.log("Running webpack..");
 		runWebpack(shortName, configFiles);
 
@@ -84,6 +95,7 @@ WebpackCompiler = class WebpackCompiler {
 				data: file.getContentsAsString()
 			});
 		});
+
 	}
 };
 
@@ -491,8 +503,40 @@ function addAssets(target, file, fs) {
 function compileDevServer(target, files, webpackConfig) {
 	const file = files[files.length - 1];
 
+	function addFile(outputData,fs) {
+		file.addJavaScript({
+			path: 'webpack.conf.js',
+			data: '__WebpackDevServerConfig__ = ' + JSON.stringify(webpackConfig.devServer) + ';\n'
+		});
+
+		outputData.map((fileContent, key)=> {
+			file.addJavaScript({
+				path: key + '.js',
+				data: fileContent.get(0),
+				sourceMap: WebpackSourceMapFix(fileContent.get(1).toJS())
+			});
+		});
+
+		files[0].addHtml({
+			section: "head",
+			data: `<link rel="stylesheet" type="text/css" href="${clientWebpackStats.publicPath + "style.css"}" />`
+		});
+
+		Immutable.Map(clientWebpackStats).toList().flatten(true).map(function (value,index) {
+			if (/\.css$/.test(value)) {
+				file.addHtml({
+					section: "head",
+					data: `<link rel="stylesheet" type="text/css" href={${clientWebpackStats.publicPath + value}}/>`
+				});
+			}
+		});
+
+	}
+
 	if (configHashes[target] && _.every(files, file => configHashes[target][file.getSourceHash()])) {
 		// Webpack is already watching the files, only restart if the config has changed
+		let outputData = WebpackStatUtil.getOutputData(target, devServerMiddleware[target].fileSystem, clientWebpackStats.assetsByChunkName, webpackConfig);
+		addFile(outputData,devServerMiddleware[target].fileSystem);
 		return;
 	}
 
@@ -511,19 +555,7 @@ function compileDevServer(target, files, webpackConfig) {
 				assetsByChunkName: _webpackStats.assetsByChunkName,
 				publicPath: _webpackStats.publicPath
 			};
-
-			file.addJavaScript({
-				path: 'webpack.conf.js',
-				data: '__WebpackDevServerConfig__ = ' + JSON.stringify(webpackConfig.devServer) + ';\n'
-			});
-
-			outputData.map((fileContent, key)=> {
-				file.addJavaScript({
-					path: key + '.js',
-					data: fileContent.get(0),
-					sourceMap: WebpackSourceMapFix(fileContent.get(1).toJS())
-				});
-			});
+			addFile(outputData,devServerMiddleware[target].fileSystem);
 
 		}));
 	}

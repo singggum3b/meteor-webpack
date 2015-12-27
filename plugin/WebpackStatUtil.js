@@ -9,10 +9,16 @@ WebpackStatUtil = {
 				})
 				.map((value, key)=> {
 					let outputPath = path.join(webpackConfig.output.path, value.get(0));
-					return I.fromJS([
-						fs.readFileSync(outputPath).toString(),
-						JSON.parse(fs.readFileSync(outputPath + ".map").toString())
-					]);
+					console.log("Attemp to read: " + outputPath);
+					try {
+						return I.fromJS([
+							fs.readFileSync(outputPath).toString(),
+							JSON.parse(fs.readFileSync(outputPath + ".map").toString())
+						]);
+					} catch (e) {
+						throw new Error("File read failed (Bundle build failed). Check if you're missing any module..");
+					}
+
 				});
 	}
 };
