@@ -281,7 +281,7 @@ function prepareConfig(target, webpackConfig, usingDevServer) {
 		webpackConfig.devServer.host = webpackConfig.devServer.host || 'localhost';
 		webpackConfig.devServer.port = webpackConfig.devServer.port || 3500;
 	} else {
-		webpackConfig.devtool = webpackConfig.devtool || 'source-map';
+		delete webpackConfig.devtool;
 	}
 
 	//Assign correct bundle name
@@ -357,8 +357,6 @@ function prepareConfig(target, webpackConfig, usingDevServer) {
 		webpackConfig.plugins = [];
 	}
 
-	webpackConfig.plugins.unshift(new webpack.optimize.DedupePlugin());
-
 	let definePlugin = {
 		'process.env.NODE_ENV': JSON.stringify(IS_DEBUG ? 'development' : 'production'),
 		'Meteor.isClient': JSON.stringify(target !== 'server'),
@@ -379,13 +377,14 @@ function prepareConfig(target, webpackConfig, usingDevServer) {
 
 	if (!IS_DEBUG) {
 		// Production optimizations
-		//webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin());
+		webpackConfig.plugins.unshift(new webpack.optimize.DedupePlugin());
 	}
 
 	if (usingDevServer) {
 		webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
 		webpackConfig.plugins.push(new webpack.NoErrorsPlugin());
 	}
+
 }
 
 const compilers = {};
@@ -465,7 +464,7 @@ function compile(target, files, webpackConfig) {
 			file.addJavaScript({
 				path: key + '.js',
 				data: fileContent.get(0),
-				sourceMap: WebpackSourceMapFix(fileContent.get(1).toJS())
+				sourceMap: (IS_DEBUG && fileContent.size > 2) && WebpackSourceMapFix(fileContent.get(1).toJS())
 			});
 		});
 
@@ -513,18 +512,13 @@ function compileDevServer(target, files, webpackConfig) {
 			file.addJavaScript({
 				path: key + '.js',
 				data: fileContent.get(0),
-				sourceMap: WebpackSourceMapFix(fileContent.get(1).toJS())
+				sourceMap: (IS_DEBUG && fileContent.size > 2) && WebpackSourceMapFix(fileContent.get(1).toJS())
 			});
-		});
-
-		files[0].addHtml({
-			section: "head",
-			data: `<link rel="stylesheet" type="text/css" href="${clientWebpackStats.publicPath + "style.css"}" />`
 		});
 
 		Immutable.Map(clientWebpackStats).toList().flatten(true).map(function (value,index) {
 			if (/\.css$/.test(value)) {
-				file.addHtml({
+				files[0].addHtml({
 					section: "head",
 					data: `<link rel="stylesheet" type="text/css" href={${clientWebpackStats.publicPath + value}}/>`
 				});
@@ -585,7 +579,7 @@ function compileDevServer(target, files, webpackConfig) {
 	const compiler = webpack(webpackConfig);
 
 	devServerMiddleware[target] = Npm.require('webpack-dev-middleware')(compiler, {
-		noInfo: true,
+		noInfo: false,
 		publicPath: webpackConfig.output.publicPath,
 		stats: {colors: true},
 		watchOptions: webpackConfig.watchOptions
